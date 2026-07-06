@@ -3,7 +3,7 @@ import { createContext, useState } from 'react';
 // Contexto interno
 export const AuthContext = createContext();
 
-export const AuthProvider = ({ children }) => {
+export function AuthProvider({ children }) {
   // Inicialización síncrona y limpia del usuario desde el localStorage
   const [user, setUser] = useState(() => {
     const storedUser = localStorage.getItem('user');

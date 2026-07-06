@@ -2,7 +2,7 @@ const db = require('../config/db');
 
 // Obtener todos los productos
 exports.getProducts = (req, res) => {
-  const query = 'SELECT * FROM products';
+  const query = 'SELECT * FROM productos'; 
   db.query(query, (err, results) => {
     if (err) {
       console.error('Error al obtener productos:', err);
@@ -12,21 +12,24 @@ exports.getProducts = (req, res) => {
   });
 };
 
-// Crear un nuevo producto (con imagen)
+// Crear un nuevo producto
 exports.createProduct = (req, res) => {
-  const { nombre, descripcion, precio } = req.body;
-  
-  // Si se subió un archivo, guardamos la ruta relativa, de lo contrario dejamos null
+  // Capturamos las variables del cuerpo de la petición
+  const { nombre, descripcion, precio, stock } = req.body;
   const imagen = req.file ? `/uploads/${req.file.filename}` : null;
 
-  if (!nombre || !precio) {
-    return res.status(400).json({ error: 'El nombre y el precio son obligatorios.' });
+  // Validación flexible: si no viene el stock o es un string vacío, le asignamos 0 por defecto
+  const valorStock = (stock !== undefined && stock !== '') ? parseInt(stock, 10) : 0;
+  const valorPrecio = parseFloat(precio);
+
+  if (!nombre || isNaN(valorPrecio)) {
+    return res.status(400).json({ error: 'El nombre y el precio válidos son obligatorios.' });
   }
 
-  const query = 'INSERT INTO products (nombre, descripcion, precio, imagen) VALUES (?, ?, ?, ?)';
-  db.query(query, [nombre, descripcion, precio, imagen], (err, result) => {
+  const query = 'INSERT INTO productos (nombre, descripcion, precio, imagen, stock) VALUES (?, ?, ?, ?, ?)';
+  db.query(query, [nombre, descripcion, valorPrecio, imagen, valorStock], (err, result) => {
     if (err) {
-      console.error('Error al insertar producto:', err);
+      console.error('Error al insertar producto en DB:', err);
       return res.status(500).json({ error: 'Error al registrar el producto en la base de datos.' });
     }
     res.status(201).json({ message: 'Producto creado con éxito', id: result.insertId });
@@ -36,11 +39,13 @@ exports.createProduct = (req, res) => {
 // Actualizar un producto existente
 exports.updateProduct = (req, res) => {
   const { id } = req.params;
-  const { nombre, descripcion, precio } = req.body;
+  const { nombre, descripcion, precio, stock } = req.body;
   
-  // Buscamos si viene una nueva imagen
-  let query = 'UPDATE products SET nombre = ?, descripcion = ?, precio = ?';
-  let params = [nombre, descripcion, precio];
+  const valorStock = (stock !== undefined && stock !== '') ? parseInt(stock, 10) : 0;
+  const valorPrecio = parseFloat(precio);
+
+  let query = 'UPDATE productos SET nombre = ?, descripcion = ?, precio = ?, stock = ?';
+  let params = [nombre, descripcion, valorPrecio, valorStock];
 
   if (req.file) {
     const imagen = `/uploads/${req.file.filename}`;
@@ -63,7 +68,7 @@ exports.updateProduct = (req, res) => {
 // Eliminar un producto
 exports.deleteProduct = (req, res) => {
   const { id } = req.params;
-  const query = 'DELETE FROM products WHERE id = ?';
+  const query = 'DELETE FROM productos WHERE id = ?';
 
   db.query(query, [id], (err, result) => {
     if (err) {

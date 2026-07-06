@@ -7,6 +7,7 @@ import authRoutes from './src/routes/authRoutes.js';
 import productRoutes from './src/routes/productRoutes.js';
 import orderRoutes from './src/routes/orderRoutes.js';
 import userRoutes from './src/routes/userRoutes.js';
+import metricsRoutes from './src/routes/metricsRoutes.js'; // 🔥 NUEVO: Enrutador para el Dashboard
 
 dotenv.config();
 
@@ -22,11 +23,12 @@ app.use(express.urlencoded({ extended: true }));
 // 🔥 CRUCIAL: Servir de manera estática y pública la carpeta donde multer guarda los archivos
 app.use('/uploads', express.static('uploads'));
 
-// Inyección de Endpoints solicitados
+// Inyección de Endpoints
 app.use('/api/auth', authRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/users', userRoutes);
+app.use('/api/admin/metrics', metricsRoutes);
 
 app.get('/', (req, res) => {
   res.send('API e-commerce corriendo perfectamente y protegida 🚀');

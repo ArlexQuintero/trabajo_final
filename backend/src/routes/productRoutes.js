@@ -15,22 +15,24 @@ router.get('/', async (req, res) => {
   }
 });
 
-// 2. [POST] Crear un nuevo producto
+// 2. [POST] Crear un nuevo producto (Con Stock incluido)
 router.post('/', upload.single('imagen'), async (req, res) => {
-  // 1. Recibimos las variables tal como las manda el frontend (FormData)
-  const { nombre, descripcion, precio } = req.body;
+  // Capturamos el stock que viene desde el FormData
+  const { nombre, descripcion, precio, stock } = req.body;
   const image_url = req.file ? `/uploads/${req.file.filename}` : null;
 
   try {
-    // 2. Validamos con las variables correctas
     if (!nombre || !precio) {
       return res.status(400).json({ error: 'El nombre y el precio son campos obligatorios.' });
     }
 
-    // 3. Insertamos en las columnas de la DB: (nombre, descripcion, precio, imagen)
+    // Si no mandan stock o viene vacío, lo dejamos en 0 por defecto
+    const valorStock = (stock !== undefined && stock !== '') ? parseInt(stock, 10) : 0;
+
+    // Insertamos incluyendo la columna stock
     const [result] = await pool.query(
-      'INSERT INTO productos (nombre, descripcion, precio, imagen) VALUES (?, ?, ?, ?)',
-      [nombre, descripcion, precio, image_url]
+      'INSERT INTO productos (nombre, descripcion, precio, imagen, stock) VALUES (?, ?, ?, ?, ?)',
+      [nombre, descripcion, precio, image_url, valorStock]
     );
 
     res.status(201).json({ message: 'Producto registrado con éxito', id: result.insertId });
@@ -40,10 +42,10 @@ router.post('/', upload.single('imagen'), async (req, res) => {
   }
 });
 
-// 3. [PUT] Actualizar un producto existente
+// 3. [PUT] Actualizar un producto existente (Con Stock incluido)
 router.put('/:id', upload.single('imagen'), async (req, res) => {
   const { id } = req.params;
-  const { nombre, descripcion, precio } = req.body;
+  const { nombre, descripcion, precio, stock } = req.body;
 
   try {
     const [current] = await pool.query('SELECT imagen FROM productos WHERE id = ?', [id]);
@@ -54,9 +56,12 @@ router.put('/:id', upload.single('imagen'), async (req, res) => {
       imagen_Url = `/uploads/${req.file.filename}`;
     }
 
+    const valorStock = (stock !== undefined && stock !== '') ? parseInt(stock, 10) : 0;
+
+    // Actualizamos la columna stock en la base de datos
     await pool.query(
-      'UPDATE productos SET nombre = ?, descripcion = ?, precio = ?, imagen = ? WHERE id = ?',
-      [nombre, descripcion, precio, imagen_Url, id]
+      'UPDATE productos SET nombre = ?, descripcion = ?, precio = ?, imagen = ?, stock = ? WHERE id = ?',
+      [nombre, descripcion, precio, imagen_Url, valorStock, id]
     );
 
     res.json({ message: 'Producto actualizado con éxito.' });

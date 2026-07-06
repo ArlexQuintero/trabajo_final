@@ -12,12 +12,14 @@ export default function AdminProducts() {
   const [prodNombre, setProdNombre] = useState('');
   const [prodDescripcion, setProdDescripcion] = useState('');
   const [prodPrecio, setProdPrecio] = useState('');
+  const [prodStock, setProdStock] = useState(''); // Recuperado
   const [imagenFile, setImagenFile] = useState(null);
 
   // Captura de errores en caliente
   const [errors, setErrors] = useState({
     nombre: '',
-    precio: ''
+    precio: '',
+    stock: '' // Recuperado
   });
 
   const validateField = (field, value) => {
@@ -28,6 +30,10 @@ export default function AdminProducts() {
     if (field === 'precio') {
       if (!value) errorMsg = 'El precio es obligatorio.';
       else if (isNaN(value) || Number(value) <= 0) errorMsg = 'Debe ser un número mayor a 0.';
+    }
+    if (field === 'stock') {
+      if (value === '' || value === undefined) errorMsg = 'El stock inicial es obligatorio.';
+      else if (isNaN(value) || Number(value) < 0) errorMsg = 'El stock no puede ser negativo.';
     }
     setErrors(prev => ({ ...prev, [field]: errorMsg }));
   };
@@ -54,10 +60,12 @@ export default function AdminProducts() {
     setSuccess('');
     const token = localStorage.getItem('token');
 
+    // Mapeamos los datos en orden para evitar bugs con Multer
     const formData = new FormData();
     formData.append('nombre', prodNombre);
     formData.append('descripcion', prodDescripcion);
     formData.append('precio', prodPrecio);
+    formData.append('stock', prodStock); // Agregado
     if (imagenFile) formData.append('imagen', imagenFile);
 
     try {
@@ -77,8 +85,9 @@ export default function AdminProducts() {
       setProdNombre('');
       setProdDescripcion('');
       setProdPrecio('');
+      setProdStock(''); 
       setImagenFile(null);
-      setErrors({ nombre: '', precio: '' });
+      setErrors({ nombre: '', precio: '', stock: '' });
       document.getElementById('fileInput').value = ''; 
       fetchProducts();
     } catch (error) {
@@ -92,7 +101,8 @@ export default function AdminProducts() {
     setProdNombre(prod.nombre);
     setProdDescripcion(prod.descripcion);
     setProdPrecio(prod.precio);
-    setErrors({ nombre: '', precio: '' }); 
+    setProdStock(prod.stock !== undefined ? prod.stock : ''); // Agregado
+    setErrors({ nombre: '', precio: '', stock: '' }); 
   };
 
   const handleDeleteProduct = async (id) => {
@@ -113,7 +123,7 @@ export default function AdminProducts() {
     fetchProducts();
   }, []);
 
-  const isFormInvalid = errors.nombre || errors.precio || !prodNombre || !prodPrecio;
+  const isFormInvalid = errors.nombre || errors.precio || errors.stock || !prodNombre || !prodPrecio || prodStock === '';
 
   return (
     <div className="animate-fadeIn grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -134,6 +144,7 @@ export default function AdminProducts() {
                   <th className="px-4 py-4">Miniatura</th>
                   <th className="px-4 py-4">Nombre</th>
                   <th className="px-4 py-4">Precio</th>
+                  <th className="px-4 py-4 text-center">Stock</th>
                   <th className="px-4 py-4 text-center">Acciones</th>
                 </tr>
               </thead>
@@ -149,6 +160,11 @@ export default function AdminProducts() {
                     </td>
                     <td className="px-4 py-2 font-bold text-purple-950">{p.nombre}</td>
                     <td className="px-4 py-2 text-purple-600">${parseFloat(p.precio).toLocaleString()}</td>
+                    <td className="px-4 py-2 text-center">
+                      <span className={`px-2 py-1 rounded-full text-xs font-bold ${p.stock < 5 ? 'bg-pink-100 text-pink-700' : 'bg-purple-100 text-purple-700'}`}>
+                        {p.stock !== undefined ? p.stock : 0} u.
+                      </span>
+                    </td>
                     <td className="px-4 py-2 text-center">
                       <div className="flex items-center justify-center gap-3">
                         <button onClick={() => handleEditInit(p)} className="text-amber-500 font-bold text-xs hover:underline">Editar ✏️</button>
@@ -186,18 +202,35 @@ export default function AdminProducts() {
             <label className="block text-xs font-bold text-purple-950 mb-1">Descripción</label>
             <textarea value={prodDescripcion} onChange={(e) => setProdDescripcion(e.target.value)} className="w-full px-3 py-2 border border-purple-100 rounded-xl text-sm h-20 resize-none" placeholder="Detalles del artículo..." />
           </div>
-          <div>
-            <label className="block text-xs font-bold text-purple-950 mb-1">Precio (COP)</label>
-            <input 
-              type="number" 
-              value={prodPrecio} 
-              onChange={(e) => { setProdPrecio(e.target.value); validateField('precio', e.target.value); }} 
-              className={`w-full px-3 py-2 border rounded-xl text-sm transition-colors ${errors.precio ? 'border-pink-500 bg-pink-50/30' : 'border-purple-100'}`} 
-              placeholder="25000" 
-              required 
-            />
-            {errors.precio && <p className="text-pink-600 text-[11px] font-bold mt-1 pl-1">{errors.precio}</p>}
+          
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-xs font-bold text-purple-950 mb-1">Precio (COP)</label>
+              <input 
+                type="number" 
+                value={prodPrecio} 
+                onChange={(e) => { setProdPrecio(e.target.value); validateField('precio', e.target.value); }} 
+                className={`w-full px-3 py-2 border rounded-xl text-sm transition-colors ${errors.precio ? 'border-pink-500 bg-pink-50/30' : 'border-purple-100'}`} 
+                placeholder="25000" 
+                required 
+              />
+              {errors.precio && <p className="text-pink-600 text-[11px] font-bold mt-1 pl-1">{errors.precio}</p>}
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-purple-950 mb-1">Stock Disponible</label>
+              <input 
+                type="number" 
+                value={prodStock} 
+                onChange={(e) => { setProdStock(e.target.value); validateField('stock', e.target.value); }} 
+                className={`w-full px-3 py-2 border rounded-xl text-sm transition-colors ${errors.stock ? 'border-pink-500 bg-pink-50/30' : 'border-purple-100'}`} 
+                placeholder="10" 
+                required 
+              />
+              {errors.stock && <p className="text-pink-600 text-[11px] font-bold mt-1 pl-1">{errors.stock}</p>}
+            </div>
           </div>
+
           <div>
             <label className="block text-xs font-bold text-purple-950 mb-1">Imagen del Producto</label>
             <input id="fileInput" type="file" accept="image/*" onChange={(e) => setImagenFile(e.target.files[0])} className="w-full text-xs text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-purple-50 file:text-purple-700 hover:file:bg-purple-100" />
@@ -205,11 +238,7 @@ export default function AdminProducts() {
           <button 
             type="submit" 
             disabled={isFormInvalid}
-            className={`w-full font-bold py-2.5 rounded-full text-sm mt-2 shadow-md transition-all ${
-              isFormInvalid 
-                ? 'bg-gray-300 text-gray-500 cursor-not-allowed shadow-none' 
-                : 'bg-gradient-to-r from-purple-500 to-pink-500 text-white hover:opacity-90'
-            }`}
+            className={`w-full font-bold py-2.5 rounded-full text-sm mt-2 shadow-md transition-all ${isFormInvalid ? 'bg-gray-300 text-gray-500 cursor-not-allowed shadow-none' : 'bg-gradient-to-r from-purple-500 to-pink-500 text-white hover:opacity-90'}`}
           >
             {editingProductId ? 'Guardar Cambios' : 'Registrar Producto 🚀'}
           </button>

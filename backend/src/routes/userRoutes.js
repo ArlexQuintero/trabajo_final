@@ -5,7 +5,7 @@ import { verifyToken, isAdmin } from '../middlewares/authMiddleware.js';
 
 const router = express.Router();
 
-// [GET] /api/users - Ver todos los usuarios (SOLO ADMIN)
+// [GET] /api/users - Ver todos los usuarios 
 router.get('/', verifyToken, isAdmin, async (req, res) => {
   try {
     const [rows] = await pool.query('SELECT id, name, email, role, created_at FROM usuarios');
@@ -15,7 +15,7 @@ router.get('/', verifyToken, isAdmin, async (req, res) => {
   }
 });
 
-// 🔥 [POST] /api/users - Crear un nuevo usuario desde el panel (SOLO ADMIN)
+// 🔥 [POST] /api/users - Crear un nuevo usuario desde el panel 
 router.post('/', verifyToken, isAdmin, async (req, res) => {
   const { name, email, password, role } = req.body;
 
@@ -48,7 +48,7 @@ router.post('/', verifyToken, isAdmin, async (req, res) => {
   }
 });
 
-// [GET] /api/users/:id - Detalle de un usuario (SOLO ADMIN)
+// [GET] /api/users/:id - Detalle de un usuario 
 router.get('/:id', verifyToken, isAdmin, async (req, res) => {
   try {
     const [rows] = await pool.query('SELECT id, name, email, role, created_at FROM usuarios WHERE id = ?', [req.params.id]);
