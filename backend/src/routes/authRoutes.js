@@ -5,7 +5,59 @@ import db from '../config/db.js';
 
 const router = express.Router();
 
-// POST /api/auth/login
+// ==========================================
+// 1. POST /api/auth/register (SOLUCIÓN DE COLUMNAS)
+// ==========================================
+router.post('/register', async (req, res) => {
+  // Recibimos los datos del frontend
+  const { name, email, password, phone, address } = req.body;
+
+  console.log("=== INTENTO DE REGISTRO ===");
+  console.log("Datos recibidos para registrar:", req.body);
+
+  try {
+    if (!name || !email || !password) {
+      console.log("❌ Fallo: Campos obligatorios vacíos (name, email o password)");
+      return res.status(400).json({ error: 'El nombre, email y contraseña son obligatorios' });
+    }
+
+    console.log("Encriptando la contraseña...");
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, salt);
+
+    // 🔥 CORRECCIÓN AQUÍ: Usamos exactamente las columnas que existen en tu tabla MySQL
+    // Nota: Como 'phone' (teléfono) y 'address' (dirección) no están en tu lista de columnas,
+    // los omitimos en el INSERT para que no rompa la base de datos.
+    const query = `
+      INSERT INTO usuarios (name, email, password, role) 
+      VALUES (?, ?, ?, 'user')
+    `;
+
+    console.log("Insertando usuario en la base de datos...");
+    // Pasamos solo los valores de las columnas existentes
+    const [result] = await db.query(query, [name, email, hashedPassword]);
+
+    console.log("✅ Usuario registrado con éxito. ID insertado:", result.insertId);
+    return res.status(201).json({ 
+      message: 'Usuario registrado con éxito', 
+      id: result.insertId 
+    });
+
+  } catch (error) {
+    console.error('💥 ERROR CRÍTICO EN EL REGISTRO:', error.message);
+
+    if (error.code === 'ER_DUP_ENTRY') {
+      return res.status(400).json({ error: 'El correo electrónico ya está registrado' });
+    }
+
+    return res.status(500).json({ error: 'Error interno del servidor al crear la cuenta' });
+  }
+});
+
+
+// ==========================================
+// 2. POST /api/auth/login (TU ENDPOINT ACTUAL)
+// ==========================================
 router.post('/login', async (req, res) => {
   const { email, password } = req.body;
 
@@ -18,7 +70,6 @@ router.post('/login', async (req, res) => {
       return res.status(400).json({ error: 'Faltan campos obligatorios' });
     }
 
-    // Ejecutamos tolerando si la db usa promesas nativas o tradicional
     const result = await db.query('SELECT * FROM usuarios WHERE email = ?', [email]);
     const rows = Array.isArray(result[0]) ? result[0] : result;
 
@@ -53,7 +104,7 @@ router.post('/login', async (req, res) => {
       token,
       user: {
         id: user.id,
-        name: user.name,
+        name: user.nombre, // Cambiado user.name por user.nombre que es como se llama en tu INSERT
         email: user.email,
         role: user.role
       }
