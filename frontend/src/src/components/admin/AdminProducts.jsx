@@ -92,7 +92,7 @@ export default function AdminProducts() {
     setProdNombre(prod.nombre);
     setProdDescripcion(prod.descripcion);
     setProdPrecio(prod.precio);
-    setErrors({ nombre: '', precio: '' }); // Limpia errores al cargar edición
+    setErrors({ nombre: '', precio: '' }); 
   };
 
   const handleDeleteProduct = async (id) => {

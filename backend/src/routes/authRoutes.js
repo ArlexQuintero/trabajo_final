@@ -65,5 +65,4 @@ router.post('/login', async (req, res) => {
   }
 });
 
-// ¡La línea mágica que solucionará el crash! Exportación por defecto moderna
 export default router;

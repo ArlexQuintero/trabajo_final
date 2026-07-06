@@ -1,8 +1,8 @@
 const express = require('express');
 const router = express.Router();
-const bcrypt = require('bcrypt'); // O require('bcryptjs') según uses
+const bcrypt = require('bcrypt'); 
 const jwt = require('jsonwebtoken');
-const db = require('../config/db'); // Tu conexión a MySQL
+const db = require('../config/db'); 
 
 // POST /api/auth/login
 router.post('/login', async (req, res) => {
@@ -15,7 +15,6 @@ router.post('/login', async (req, res) => {
     }
 
     // 2. Buscar al usuario en la base de datos (con promesas o callback tradicional)
-    // Nota: Dependiendo de tu config/db, puede requerir .query() directo. Adaptado a estándar de mysql2:
     const [rows] = await db.query('SELECT * FROM usuarios WHERE email = ?', [email]);
 
     if (rows.length === 0) {
@@ -44,7 +43,7 @@ router.post('/login', async (req, res) => {
         id: user.id,
         name: user.name,
         email: user.email,
-        role: user.role // <-- Esencial para que el front sepa si mandarlo a /admin o /shop
+        role: user.role 
       }
     });
 

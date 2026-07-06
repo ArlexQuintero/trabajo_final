@@ -11,7 +11,7 @@ export const verifyToken = (req, res, next) => {
 
   try {
     const verified = jwt.verify(token, process.env.JWT_SECRET || 'tu_clave_secreta_aqui');
-    req.user = verified; // Guarda los datos del token (id, role) en la petición
+    req.user = verified; 
     next(); 
   } catch (error) {
     res.status(403).json({ error: 'Token inválido o expirado.' });

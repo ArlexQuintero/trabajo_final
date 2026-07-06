@@ -4,7 +4,7 @@ import AdminUsers from '../components/admin/AdminUsers';
 import AdminProducts from '../components/admin/AdminProducts';
 
 export default function AdminPage() {
-  const [activeTab, setActiveTab] = useState('usuarios'); // 'usuarios' o 'productos'
+  const [activeTab, setActiveTab] = useState('usuarios'); 
 
   return (
     <div className="min-h-screen bg-gradient-to-tr from-pink-50 via-purple-50 to-indigo-50 flex flex-col font-sans">

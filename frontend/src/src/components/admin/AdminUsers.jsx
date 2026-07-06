@@ -58,7 +58,7 @@ export default function AdminUsers() {
 
   const handleCreateUser = async (e) => {
     e.preventDefault();
-    if (isFormInvalid) return; // Doble protección
+    if (isFormInvalid) return;
 
     setError('');
     setSuccess('');

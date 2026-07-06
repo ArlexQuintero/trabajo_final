@@ -1,8 +1,8 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './src/context/AuthContext';
-import { CartProvider } from './src/context/CartContext'; // <-- ¡Importación del carrito lista!
+import { CartProvider } from './src/context/CartContext'; 
 
-// Importaciones de Páginas / Vistas Principales (Estilo Pastel)
+// Importaciones de Páginas / Vistas Principales 
 import HomePage from './src/pages/HomePage';
 import ShopPage from './src/pages/ShopPage';
 import CartPage from './src/pages/CartPage';

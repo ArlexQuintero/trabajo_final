@@ -24,7 +24,7 @@ export default function ShopPage() {
     if (cart.length === 0) return;
 
     alert(`🎉 ¡Pedido Simulado con Éxito! 🎉\n\nHas solicitado ${totalItems} productos por un valor total de $${totalPrice.toLocaleString()} COP.\n\n¡Gracias por tu compra en DOG-GO! ✨`);
-    clearCart(); // Resetea el carrito al finalizar
+    clearCart(); 
   };
 
   return (

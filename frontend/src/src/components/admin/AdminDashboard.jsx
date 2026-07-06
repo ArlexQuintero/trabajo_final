@@ -30,7 +30,7 @@ export default function AdminDashboard() {
     try {
       await apiClient.put(`/orders/${id}/status`, { status: newStatus });
       alert(`Pedido actualizado a: ${newStatus}`);
-      fetchAllOrders(); // Recarga la lista de forma asíncrona tras la actualización
+      fetchAllOrders(); 
     } catch (error) {
       console.error("Error al modificar estado:", error);
       alert("Error al modificar el estado del pedido");
